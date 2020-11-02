@@ -1,0 +1,223 @@
+swagger: "2.0"
+info:
+  title: "AMARO TECHNICAL CHALLENGE APP teste"
+  description: >
+    This document describes the API that was generated to meet Amaro's technical challenge, providing what you need to:
+
+    1. Send and receive data to register new products as well as the array with vectors compatible with the registered tag base.
+
+    2. Retrieve a list of similar products from the result of the product registration response.
+
+  version: 1.0.0
+  contact:
+    email: mariane.muniz.ribeiro@hotmail.com
+    name: Mariane Muniz
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+#host: "localhost:8080"
+tags:
+  - name: "Products"
+schemes:
+  - http
+paths:
+  /product-create:
+    post:
+      tags:
+        - "Products"
+      summary: "New product registration interface"
+      description: >
+        Through this interface it is possible to register new products, validate registration data and return the list of
+        product vectors.
+
+        The interface works by receiving batches of product forms, the products that have the correct registration part
+        will be persisted in the database and those that have problems will be returned with the information for correction.
+      operationId: "create"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: body
+          name: body
+          description: "Object for register new products on the database"
+          required: true
+          schema:
+            $ref: "#/definitions/ProductRegisterListForm"
+      responses:
+        "200":
+          description: "The payload was processed"
+          schema:
+            $ref: "#/definitions/ProductCreatedResponse"
+  /similar:
+    post:
+      tags:
+        - "Products"
+      description: >
+        Through this interface it is possible to retrieve information from similar products based on a main product. 
+        The mechanism works by responding to batch requests for product forms.
+      summary: "Search for similar products"
+      operationId: "read"
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: body
+          name: body
+          description: "Object for querying similar products already registered in the system"
+          required: true
+          schema:
+            $ref: "#/definitions/SimilarProductListForm"
+      responses:
+        "200":
+          description: "The payload was processed and returned the products that have the greatest similarity"
+          schema:
+            $ref: '#/definitions/SimilarListProductResponse'
+
+definitions:
+
+  ProductRegisterListForm:
+    type: object
+    description: "Registration form list"
+    properties:
+      products:
+        type: array
+        items:
+          $ref: "#/definitions/ProductRegisterForm" 
+  
+  ProductRegisterForm:
+    type: object
+    description: "Product registration form"
+    properties:
+      id:
+        type: integer
+        description: "The database sequential unique identifier"
+      name:
+        type: string
+        description: "This field stores the name of the product"
+      tags:
+        type: array
+        items:
+          - type: string
+        description: "This field brings the list of the tags"
+
+  SimilarListProductResponse:
+    type: object
+    description: "The registration payload response object. In the object we have the list of products that were successfully registered and the forms that were rejected."
+    properties: 
+      invalidProducts:
+        type: object
+        description: "The list with invalid form"
+        $ref: "#/definitions/invalidProduct"
+      productSimilar:
+        type: array
+        description: "The list with products created"
+        items: 
+          $ref: "#/definitions/SimilarProduct"
+
+  ProductCreatedResponse:
+    type: object
+    description: "The registration payload response object. In the object we have the list of products that were successfully registered and the forms that were rejected."
+    properties: 
+      invalidProducts:
+        type: object
+        description: "The list with invalid form"
+        $ref: "#/definitions/invalidProduct"
+      createdList:
+        type: array
+        description: "The list with products created"
+        items: 
+          $ref: "#/definitions/ProductCreated"
+
+  invalidProduct:
+    type: object
+    properties: 
+      errors:
+        type: array
+        description: "A list with product form with errors"      
+        items: 
+          $ref: "#/definitions/ErrorCode"
+        
+  ProductCreated:
+    type: object
+    description: "New product registered response"
+    properties:
+      id:
+        type: integer
+        description: "The database sequential unique identifier"
+      name:
+        type: string
+        description: "This field stores the name of the product"
+      tags:
+        type: array
+        items:
+          - type: string
+        description: "This field brings the list of the tags"
+      tagsVector:
+        type: array
+        items:
+          - type: string
+        description: "This field brings the list of the tag vectors"
+  
+  SimilarProductListForm:
+    type: object
+    description: "A list of similar products based on product in the request"
+    properties: 
+      similar:
+        type: array
+        items:
+          $ref: '#/definitions/ProductCreated'
+  
+  SimilarProduct:
+    type: object
+    description: "The feedback with product with your similarity"
+    properties:
+      id:
+        type: integer
+        description: "The database sequential unique identifier"
+      name:
+        type: string
+        description: "This field stores the name of the product"
+      similarity:
+        type: number
+        description: "The value of similarity with your original product"
+  
+  ErrorCode:
+    type: object
+    description: "An object with detailed errors on your form request"
+    properties:
+      codes:
+        description: "It is a field different types of representation of the form field that is in error for example:"
+        type: array
+        items:
+          - type: string
+      arguments:
+        type: array
+        items: 
+          - type: number
+        description: "The form index of payload with error"
+      defaultMessage:
+        type: string
+        description: "The message with the details for understanding the failure"
+      objectName:
+        type: string
+        description: "The name of object used in the java execution"
+      field:
+        type: string
+        description: "The field with error"
+      code:
+        type: string
+        description: > 
+          The error code to identify the reason for rejection
+
+          emptyName: When the product name is empty
+          
+          invalidTagName: When the product have an unregistered tag name
+          
+          emptyId: When the product has no identifier or is in the database for registration. In case of consultation of 
+          similars if the product is not registered, this type of error will be triggered
+
+          invalidTagsVectorName: When the product has the number of vectors different from the number of tags available in the base
+
+

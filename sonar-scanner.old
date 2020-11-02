@@ -1,0 +1,12 @@
+sonar.projectName=amaro
+sonar.projectKey=br.com.amaro.demo
+sonar.projectVersion=1.0
+sonar.sources=src/main/java
+sonar.tests=src/test/java
+sonar.java.binaries=target/test-classes
+sonar.junit.reportPaths=target/surfire-reports
+sonar.jacoco.reportPaths=target/jacoco.exec
+sonar.exclusions=**/dtos/**, **/forms/**, **/parameters/**
+sonar.coverage.exclusions=**/dtos/**, **/entities/**, **/exceptions/**, **/repositories/**, **/parameters/**, **/forms/**, **/DemoApplication.java
+sonar.language=java
+sonar.sourceEncoding=UTF-8
